@@ -1,0 +1,39 @@
+# Java Files #
+*.class
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+# Maven Files #
+target/
+
+# Gradle #
+.gradle
+
+# IntelliJ Files #
+*.iml
+*.ipr
+*.iws
+.idea/
+out/
+build/
+
+# Eclipse #
+.project
+.classpath
+
+# OSX Files #
+
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+
+# Thumbnails
+._*
+
+# Files that might appear on external disk
+.Spotlight-V100
+.Trashes
