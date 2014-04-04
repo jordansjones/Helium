@@ -3,9 +3,7 @@ package nextmethod.helium;
 import com.google.inject.AbstractModule;
 import com.google.inject.Scopes;
 import io.netty.channel.EventLoopGroup;
-import io.netty.channel.aio.AioEventLoopGroup;
-import io.netty.channel.socket.ServerSocketChannel;
-import io.netty.channel.socket.aio.AioServerSocketChannel;
+import io.netty.channel.nio.NioEventLoopGroup;
 import nextmethod.helium.base.HttpServiceHandler;
 import nextmethod.helium.base.HttpServiceInitializer;
 import nextmethod.helium.internal.InternalIocModule;
@@ -25,7 +23,12 @@ final class IocModule extends AbstractModule {
 		install(new InternalIocModule());
 
 		// Netty things
-		bind(EventLoopGroup.class).to(AioEventLoopGroup.class).in(Scopes.NO_SCOPE);
-		bind(ServerSocketChannel.class).to(AioServerSocketChannel.class).in(Scopes.NO_SCOPE);
+		bindNio();
 	}
+
+	private void bindNio() {
+		bind(EventLoopGroup.class).to(NioEventLoopGroup.class).in(Scopes.NO_SCOPE);
+
+	}
+
 }

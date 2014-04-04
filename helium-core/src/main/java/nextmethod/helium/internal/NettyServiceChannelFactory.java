@@ -1,24 +1,15 @@
 package nextmethod.helium.internal;
 
-import com.google.inject.Inject;
-import com.google.inject.Provider;
-import io.netty.bootstrap.ChannelFactory;
+import io.netty.bootstrap.ServerChannelFactory;
+import io.netty.channel.EventLoop;
+import io.netty.channel.EventLoopGroup;
 import io.netty.channel.socket.ServerSocketChannel;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
 
-public class NettyServiceChannelFactory implements ChannelFactory<ServerSocketChannel> {
+public class NettyServiceChannelFactory implements ServerChannelFactory<ServerSocketChannel> {
 
-	private final Provider<ServerSocketChannel> channelProvider;
-
-	@Inject
-	public NettyServiceChannelFactory(final Provider<ServerSocketChannel> channelProvider) {
-		this.channelProvider = channelProvider;
-	}
-
-	/**
-	 * Creates a new channel.
-	 */
-	@Override
-	public ServerSocketChannel newChannel() {
-		return channelProvider.get();
-	}
+    @Override
+    public ServerSocketChannel newChannel(final EventLoop eventLoop, final EventLoopGroup childGroup) {
+        return new NioServerSocketChannel(eventLoop, childGroup);
+    }
 }

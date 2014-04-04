@@ -3,7 +3,7 @@ package nextmethod.helium.internal;
 import com.google.inject.PrivateModule;
 import com.google.inject.Scopes;
 import com.google.inject.TypeLiteral;
-import io.netty.bootstrap.ChannelFactory;
+import io.netty.bootstrap.ServerChannelFactory;
 import io.netty.channel.socket.ServerSocketChannel;
 
 public class InternalIocModule extends PrivateModule {
@@ -14,7 +14,7 @@ public class InternalIocModule extends PrivateModule {
 	@Override
 	protected void configure() {
 
-		final TypeLiteral<ChannelFactory<ServerSocketChannel>> factoryTypeLiteral = new TypeLiteral<ChannelFactory<ServerSocketChannel>>() {};
+		final TypeLiteral<ServerChannelFactory<ServerSocketChannel>> factoryTypeLiteral = new TypeLiteral<ServerChannelFactory<ServerSocketChannel>>() {};
 		bind(factoryTypeLiteral).to(NettyServiceChannelFactory.class).in(Scopes.SINGLETON);
 		expose(factoryTypeLiteral);
 	}

@@ -1,20 +1,22 @@
 package nextmethod.helium;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.netty.bootstrap.ChannelFactory;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.*;
+import io.netty.bootstrap.ServerChannelFactory;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.ServerChannel;
 import io.netty.util.AttributeKey;
-import nextmethod.base.Disposable;
 
 import javax.annotation.Nonnull;
-
 import java.net.InetAddress;
 import java.net.SocketAddress;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-class ServiceBootstrap implements Disposable {
+class ServiceBootstrap {
 
 	private final ServerBootstrap bootstrap;
 
@@ -25,11 +27,6 @@ class ServiceBootstrap implements Disposable {
 
 	public ServiceBootstrap() {
 		this(new ServerBootstrap());
-	}
-
-	@Override
-	public void close() {
-		this.bootstrap.shutdown();
 	}
 
 	/**
@@ -183,14 +180,14 @@ class ServiceBootstrap implements Disposable {
 	 * has a no-args constructor, its highly recommend to just use {@link #channel(Class)} for
 	 * simplify your code.
 	 */
-	public ServiceBootstrap channelFactory(final ChannelFactory<? extends ServerChannel> channelFactory) {
+	public ServiceBootstrap channelFactory(final ServerChannelFactory<? extends ServerChannel> channelFactory) {
 		bootstrap.channelFactory(channelFactory);
 		return this;
 	}
 
 	/**
 	 * The {@link Class} which is used to create {@link io.netty.channel.Channel} instances from.
-	 * You either use this or {@link #channelFactory(io.netty.bootstrap.ChannelFactory)} if your
+	 * You either use this or {@link #channelFactory(io.netty.bootstrap.ServerChannelFactory)} if your
 	 * {@link io.netty.channel.Channel} implementation has no no-args constructor.
 	 */
 	public ServiceBootstrap channel(final Class<? extends ServerChannel> channelClass) {

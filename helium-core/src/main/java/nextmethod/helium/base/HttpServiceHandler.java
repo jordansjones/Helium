@@ -1,66 +1,44 @@
 package nextmethod.helium.base;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundMessageHandlerAdapter;
-import io.netty.handler.codec.http.*;
+import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.CharsetUtil;
 
-import java.util.Date;
-import java.util.concurrent.atomic.AtomicLong;
+import javax.ws.rs.core.HttpHeaders;
 
 import static io.netty.handler.codec.http.HttpHeaders.isKeepAlive;
+import static io.netty.handler.codec.http.HttpHeaders.setContentLength;
 
-public class HttpServiceHandler extends ChannelInboundMessageHandlerAdapter<FullHttpMessage> {
+public class HttpServiceHandler extends SimpleChannelInboundHandler<HttpRequest> {
 
-	private final AtomicLong messageCount = new AtomicLong(0);
+    @Override
+    protected void messageReceived(final ChannelHandlerContext ctx, final HttpRequest msg) throws Exception {
 
-	/**
-	 * Is called once a message was received.
-	 *
-	 * @param ctx the {@link io.netty.channel.ChannelHandlerContext} which this {@link io.netty.channel.ChannelHandler} belongs to
-	 * @param msg the message to handle
-	 */
-	@Override
-	public void messageReceived(final ChannelHandlerContext ctx, final FullHttpMessage msg) throws Exception {
-		HttpRequest request = (HttpRequest) msg;
-		boolean keepAlive = isKeepAlive(msg);
+        final boolean keepAlive = isKeepAlive(msg);
 
-		final DefaultFullHttpResponse response;
-		if (request.getUri().equalsIgnoreCase("/favicon.ico")) {
-			response = new DefaultFullHttpResponse(
-				request.getProtocolVersion(),
-				HttpResponseStatus.NOT_FOUND
-			);
-		}
-		else {
-			final long msgCount = messageCount.incrementAndGet();
-			final String resMsg = String.format("Message #%d", msgCount);
+        final String uri = msg.getUri();
 
-			response = new DefaultFullHttpResponse(
-				request.getProtocolVersion(),
-				HttpResponseStatus.OK,
-				Unpooled.copiedBuffer(resMsg, CharsetUtil.UTF_8)
-			);
-		}
-		response.headers().set(HttpHeaders.Names.CONTENT_TYPE, "text/plain; charset=UTF-8");
-		HttpHeaders.addDateHeader(response, HttpHeaders.Names.DATE, new Date());
+        if (uri.equalsIgnoreCase("/favicon.ico")) {
+            final ChannelFuture write = ctx.channel().write(new DefaultFullHttpResponse(msg.getProtocolVersion(), HttpResponseStatus.NOT_FOUND));
+            if (!keepAlive) {
+                write.addListener(ChannelFutureListener.CLOSE);
+            }
+            return;
+        }
 
-		if (keepAlive) {
-			response.headers().set(HttpHeaders.Names.CONTENT_LENGTH, response.data().readableBytes());
-			response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
-		}
+        final ByteBuf content = Unpooled.copiedBuffer("Poop", CharsetUtil.UTF_8);
+        final DefaultFullHttpResponse poop = new DefaultFullHttpResponse(msg.getProtocolVersion(), HttpResponseStatus.OK, content);
+        poop.headers().set(HttpHeaders.CONTENT_TYPE, "text/plain");
+        setContentLength(poop, content.readableBytes());
 
-		ctx.nextOutboundMessageBuffer().add(response);
-		if (!keepAlive) {
-			ctx.flush().addListener(ChannelFutureListener.CLOSE);
-		}
-	}
+        ctx.channel().writeAndFlush(poop).addListener(ChannelFutureListener.CLOSE);
+    }
 
-	@Override
-	public void endMessageReceived(final ChannelHandlerContext ctx) throws Exception {
-		super.endMessageReceived(ctx);
-		ctx.flush();
-	}
 }
